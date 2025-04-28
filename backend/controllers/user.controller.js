@@ -74,4 +74,19 @@ const loginUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {accessToken, refreshToken}, "Logged In successful"));
 })
 
-export {registerUser, loginUser}
+// /api/v1/user/all?search=akash
+const fetchAllUsers = asyncHandler(async (req, res) => {
+    const keyword = req.query?.search;
+    const users = await User.find({
+        $and: [
+            {_id: {$ne: req.user?._id}},
+            {$or: [{name: {$regex: keyword, $options: "i"}}, {email: {$regex: keyword, $options: "i"}}]}
+        ]
+    })
+
+    return res.status(200).json(
+        new ApiResponse(200, users, "all user fetched successfully")
+    )
+})
+
+export {registerUser, loginUser, fetchAllUsers}
