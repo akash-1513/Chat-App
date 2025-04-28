@@ -26,21 +26,20 @@ const registerUser = asyncHandler(async (req, res) => {
         return res.status(409).json(new ApiResponse(409, null, "User already exists with same email id"));
     }
 
-    const avatarLocalFilePath = req.file?.path;
-    if(!avatarLocalFilePath) {
-        return res.status(400).json(new ApiResponse(400, null, "file upload failed"));
-    }
+    // const avatarLocalFilePath = req.file?.path;
+    // if(!avatarLocalFilePath) {
+    //     return res.status(400).json(new ApiResponse(400, null, "file upload failed"));
+    // }
 
-    const uploadResult = await uploadImage(avatarLocalFilePath);
-    if(!uploadResult) {
-        return res.status(500).json(new ApiResponse(500, null, "Error uploading on cloudinary service"));
-    } 
+    // const uploadResult = await uploadImage(avatarLocalFilePath);
+    // if(!uploadResult) {
+    //     return res.status(500).json(new ApiResponse(500, null, "Error uploading on cloudinary service"));
+    // } 
 
     const user = await User.create({
         fullname,
         email,
         password,
-        avatar: uploadResult?.url
     });
 
     return res.status(201).json(new ApiResponse(201, {fullname: user.fullname, email: user.email, avatar: user.avatar}, "User created successfully"));
@@ -65,6 +64,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const {accessToken, refreshToken} = await generateAccessRefreshToken(user?._id);
 
+    console.log(accessToken + " " + refreshToken);
+
     const options = {
         httpOnly: true,
         secure: true
@@ -76,7 +77,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
 // /api/v1/user/all?search=akash
 const fetchAllUsers = asyncHandler(async (req, res) => {
-    const keyword = req.query?.search;
+    const keyword = req.query?.search || "";
     const users = await User.find({
         $and: [
             {_id: {$ne: req.user?._id}},

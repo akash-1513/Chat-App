@@ -2,7 +2,6 @@ import {Chat} from '../models/chat.model.js'
 import { ApiResponse } from '../utils/apiResponse.js';
 import { asyncHandler } from '../utils/asyncHandler.js'
 import {User} from '../models/user.model.js'
-import {Chat} from "../models/chat.model.js"
 import mongoose from 'mongoose';
 
 // common aggregate pipleline
@@ -120,7 +119,7 @@ const createOrGetOneToOneChat = asyncHandler(async(req, res) => {
                         participants: req.user?._id
                     },
                     {
-                        participants: new mongoose.Schema.Types.ObjectId(recieverId)
+                        participants: new mongoose.Types.ObjectId(recieverId)
                     }
                 ]
             }
@@ -134,7 +133,7 @@ const createOrGetOneToOneChat = asyncHandler(async(req, res) => {
 
     const newChatInstance = await Chat.create({
         name: "One to One Chat",
-        participants: [req.user?._id, new mongoose.Schema.Types.ObjectId(recieverId)],
+        participants: [req.user?._id, new mongoose.Types.ObjectId(recieverId)],
         groupAdmin: req.user?._id
     })
 
@@ -147,19 +146,20 @@ const createOrGetOneToOneChat = asyncHandler(async(req, res) => {
         ...chatCommonAggregationPipeline()
     ])
 
+    return res.status(200).json(new ApiResponse(200, createdChat[0], "chat fetched successfully"));
     // logic to emit socket event about the new chat to added pariticipants
 
-    chat[0]?.participants?.forEach((participant) => {
+    // chat[0]?.participants?.forEach((participant) => {
         
-        emitSocketEvent(
-            req, 
-            participant._id?.toString(),
+    //     emitSocketEvent(
+    //         req, 
+    //         participant._id?.toString(),
             
-        )
-    })
+    //     )
+    // })
 
     // socket.io
 })
 
 
-export {searchAvailableUser}
+export {searchAvailableUser, createOrGetOneToOneChat}
